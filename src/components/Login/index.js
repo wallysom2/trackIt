@@ -1,81 +1,59 @@
-import axios from "axios";
-import { Fragment, useState, useEffect, useContext } from "react";
-import UserContext from "../../contexts/UserContext";
-import { useNavigate } from "react-router-dom";
-import Style from "./style";
-import Logo from "../../assets/img/logo.svg";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState } from "react";
+import Login from "./components/Login";
+import Register from "./components/Register";
+import UserContext from "././contexts/UserContext";
+import TokenContext from "./contexts/TokenContext";
+import PercentageContext from "./contexts/PercentageContext";
+import DayContext from "./contexts/DayContext"
+import "./style/reset.css";
+import "./style/style.css";
 
+export default function App() {
+  const [tokenSerialized, setTokenSerialized] = useState(localStorage.getItem("token"));
+  const [userSerialized, setUserSerialized] = useState(localStorage.getItem("user"));
 
-export default function Login() {
-  const { PersistLogin } = useContext(UserContext);
-  const { Form, Input, Button, Container, Hyperlink } = Style;
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsloading] = useState(false);
+  const [user, setUser] = useState(userSerialized);
+  const [token, setToken] = useState(tokenSerialized);
+  const [percentage, setPercentage] = useState('');
+  const [day, setDay] = useState('');
 
-  useEffect(() => {
-    if(localStorage.getItem("token") !== null){
-      navigate("/today");
-    }
-  }, [navigate]);
+  function PersistLogin(user, token) {
+    setUser(user);
+		setToken(token);
 
-  function handleLogin(e) {
-    e.preventDefault();
+    setTokenSerialized(localStorage.setItem("token", token));
+    setUserSerialized(localStorage.setItem("user", user));
+	}
 
-    setIsloading(true);
-    const promise = axios.post('https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/auth/login', {
-      email,
-      password
-    });
-    setTimeout(() => {
-      promise.then((response) => {
-        setIsloading(false);
-
-        PersistLogin(response.data.image, response.data.token);
-        navigate("/today");
-      });
-    }, 3000);
-    setTimeout(() => {
-      promise.catch((error) => {
-        setIsloading(false);
-        alert(`Não foi possível efetuar o login. Erro ${error.response.status}: ${error.response.data.message}`);
-      });
-    }, 3000);
+  function Logout() {
+    setTokenSerialized(localStorage.removeItem("token"));
+    setUserSerialized(localStorage.removeItem("user"));
+    
+    setUser(userSerialized);
+		setToken(tokenSerialized);
   }
 
   return(
-    <Fragment>
-      <Container>
-        <img alt="logo.svg" src={Logo}/>
-
-        <Form onSubmit={handleLogin}>
-          <Input 
-            type="email"
-            placeholder="email"
-            onChange={(e) => setEmail(e.target.value)}
-            value={email}
-            stageLoading={isLoading}
-            required
-          />
-          <Input
-            type="password"
-            placeholder="senha"
-            onChange={(e) => setPassword(e.target.value)}
-            value={password}
-            stageLoading={isLoading}
-            required
-          />
-
-          <Button type="submit" stageLoading={isLoading}>
-            {"Entrar"  }
-          </Button>
-        </Form>
-
-        <Hyperlink to="/register" stageLoading={isLoading}>
-          Não tem uma conta? Cadastre-se!
-        </Hyperlink>
-      </Container>
-    </Fragment>
+    <UserContext.Provider value={{user, setUser, PersistLogin, Logout}}>
+      <TokenContext.Provider value={{token, setToken}}>
+        <PercentageContext.Provider value={{percentage, setPercentage}}>
+          <DayContext.Provider value={{day, setDay}}>
+            <BrowserRouter>
+              <Topbar pathname={window.location.pathname} />
+                <Routes>
+                  <Route path="/" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/habits" element={<Habits />} />
+                  <Route path="/today" element={<Today />} />
+                  <Route path="/historic" element={<Historic />} />
+                  <Route path="/Day/:idHabit" element={<Day />} />
+                </Routes>
+              <Menu pathname={window.location.pathname}/>
+            </BrowserRouter>
+          </DayContext.Provider>
+        </PercentageContext.Provider>
+      </TokenContext.Provider>
+    </UserContext.Provider>
   );
 }
