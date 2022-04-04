@@ -18,6 +18,7 @@ const Container = styled.div`
   justify-content: center;
 
   background-color: #F2F2F2;
+
 `;
 
 const Content = styled.div`
