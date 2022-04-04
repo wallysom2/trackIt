@@ -35,7 +35,9 @@ const UserImg = styled.div`
   img{
     width: 51px;
     height: 51px;
+
     border-radius: 98.5px;
+
     margin-right: 18px;
   }
 `;
@@ -65,6 +67,7 @@ const UserConfing = styled.div`
 
   img{
     height: 25px;
+
     margin-right: 5px;
   }
 `;
@@ -77,4 +80,3 @@ const components = {
 };
 
 export default components;
-
